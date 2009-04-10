@@ -4,5 +4,5 @@ module Env where
   open import Syntax
   open import Values
 
-  Env : Ctx Type → Ctx Type → Set
-  Env Δ Γ = Box (Val Δ) Γ
+  _⇇_ : Ctx Type → Ctx Type → Set
+  Δ ⇇ Γ = Box (Val Δ) Γ

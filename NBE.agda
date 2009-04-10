@@ -11,7 +11,6 @@ module NBE where
   _⊢_  = Term
   _⊢↓_ = Nrm
   _⊢↑_ = Neu
-  _⇇_  = Env
   _⊧_  = Val
 
   ⟦_⟧ : ∀ {Γ Δ α} → Γ ⊢ α → Δ ⇇ Γ → Δ ⊧ α

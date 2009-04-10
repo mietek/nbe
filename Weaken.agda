@@ -13,6 +13,6 @@ module Weaken where
     wknNrm ρ (ƛ nm)   = ƛ (wknNrm (▸-mono ρ) nm)
     wknNrm ρ (neu ne) = neu (wknNeu ρ ne)
 
-    wknVal : ∀ {Γ Δ} → Γ ≤ Δ → Val Γ ⊆ Val Δ
-    wknVal ρ {●}     ne = wknNeu ρ ne
-    wknVal ρ {α ⇒ β} f  = λ ρ′ v → f (≤-trans ρ ρ′) v
+  wknVal : ∀ {Γ Δ} → Γ ≤ Δ → Val Γ ⊆ Val Δ
+  wknVal ρ {●}     ne = wknNeu ρ ne
+  wknVal ρ {α ⇒ β} f  = λ ρ′ v → f (≤-trans ρ ρ′) v

@@ -12,4 +12,4 @@ module Vars {χ : Set} where
   vz = here refl
 
   vs : ∀ {Γ α β} → Var Γ α → Var (Γ ▸ β) α
-  vs x = there x
+  vs = there
