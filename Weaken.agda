@@ -1,8 +1,8 @@
 module Weaken where
+  open import Forcing
   open import Modalities
   open import Subsumption
   open import Syntax
-  open import Values
 
   mutual
     wknNeu : ∀ {Γ Δ} → Γ ≤ Δ → Neu Γ ⊆ Neu Δ
@@ -13,6 +13,6 @@ module Weaken where
     wknNrm ρ (ƛ nm)   = ƛ (wknNrm (▸-mono ρ) nm)
     wknNrm ρ (neu ne) = neu (wknNeu ρ ne)
 
-  wknVal : ∀ {Γ Δ} → Γ ≤ Δ → Val Γ ⊆ Val Δ
+  wknVal : ∀ {Γ Δ} → Γ ≤ Δ → Forces Γ ⊆ Forces Δ
   wknVal ρ {●}     ne = wknNeu ρ ne
   wknVal ρ {α ⇒ β} f  = λ ρ′ v → f (≤-trans ρ ρ′) v
