@@ -14,21 +14,21 @@ module NBE where
   _⊩*_ = ForcesCtx
 
   _⊧_ : Ctx Type → Type → Set
-  Γ ⊧ α = ∀ {Δ} → Δ ⊩* Γ → Δ ⊩ α
+  Γ ⊧ α = ∀ {w} → w ⊩* Γ → w ⊩ α
 
   ⟦_⟧ : ∀ {Γ α} → Γ ⊢ α → Γ ⊧ α
-  ⟦ var x   ⟧ γ = lookup γ x
-  ⟦ ƛ e     ⟧ γ = λ ρ v → ⟦ e ⟧ (map (wknVal ρ) γ ▸ v)
-  ⟦ e₁ · e₂ ⟧ γ = ⟦ e₁ ⟧ γ ≤-refl (⟦ e₂ ⟧ γ)
+  ⟦ var x   ⟧ ρ = lookup ρ x
+  ⟦ ƛ e     ⟧ ρ = λ w≤Δ x → ⟦ e ⟧ (wknCtx w≤Δ ρ ▸ x)
+  ⟦ e₁ · e₂ ⟧ ρ = ⟦ e₁ ⟧ ρ ≤-refl (⟦ e₂ ⟧ ρ)
 
   mutual
     ⌜_⌝ : ∀ {Γ α} → Γ ⊩ α → Γ ⊢↓ α
-    ⌜_⌝ {α = ●}     ne = neu ne
-    ⌜_⌝ {α = α ⇒ β} f  = ƛ ⌜ f (▸-incr ≤-refl) ⌞ var vz ⌟ ⌝
+    ⌜_⌝ {α = ●}     x = neu x
+    ⌜_⌝ {α = α ⇒ β} f = ƛ ⌜ f ≤-incr ⌞ var vz ⌟ ⌝
 
     ⌞_⌟ : ∀ {Γ α} → Γ ⊢↑ α → Γ ⊩ α
-    ⌞_⌟ {α = ●}     ne = ne
-    ⌞_⌟ {α = α ⇒ β} f  = λ ρ x → ⌞ wknNeu ρ f · ⌜ x ⌝ ⌟
+    ⌞_⌟ {α = ●}     x = x
+    ⌞_⌟ {α = α ⇒ β} f = λ w≤Δ x → ⌞ wknNeu w≤Δ f · ⌜ x ⌝ ⌟
 
   nbe : ∀ {α} → ε ⊢ α → ε ⊢ α
   nbe e = termOfNrm ⌜ ⟦ e ⟧ ε ⌝
