@@ -33,5 +33,3 @@ module Subsumption where
   ≤-trans : ∀ {Γ Δ Σ} → Γ ≤ Δ → Δ ≤ Σ → Γ ≤ Σ
   ≤-trans ρ₁ ρ₂ = map (lookup ρ₂) ρ₁
 
-  refl-incr : ∀ {Γ α} → Γ ≤ Γ ▸ α
-  refl-incr = ▸-incr ≤-refl

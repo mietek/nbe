@@ -7,6 +7,7 @@ module Forcing where
   open import Modalities
   open import Subsumption
   open import Syntax
+  open import Vars
 
   -- The forcing relation (Γ ⊩ α) constructs a universe corresponding
   -- to a Kripke model for intuitionistic propositional logic.
@@ -18,3 +19,7 @@ module Forcing where
   -- forces everything in Δ
   ForcesCtx : Ctx Type → Ctx Type → Set
   ForcesCtx Γ Δ = Box (Forces Γ) Δ
+
+  -- Apply a substitution to a variable.
+  [_]_ : ∀ {Γ Δ α} → ForcesCtx Γ Δ → Var Δ α → Forces Γ α
+  [_]_ = lookup

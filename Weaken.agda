@@ -32,5 +32,5 @@ module Weaken where
   -- If Δ subsumes Γ, then whatever world (context) Γ forces, Δ also
   -- forces.  We can view this as letting us change the codomain of a
   -- substitution.
-  wknCtx : ∀ {Γ Δ} → Γ ≤ Δ → ForcesCtx Γ ⊆ ForcesCtx Δ
-  wknCtx = map ∘ wknForces
+  wknSub : ∀ {Γ Δ} → Γ ≤ Δ → ForcesCtx Γ ⊆ ForcesCtx Δ
+  wknSub = map ∘ wknForces

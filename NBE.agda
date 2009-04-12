@@ -17,15 +17,14 @@ module NBE where
   -- The following type aliases are intended to make the logical
   -- structure of the nbe algorithm more evident from the type
   -- signatures.
-
   _⊢_  = Term
   _⊢↓_ = Nrm
   _⊢↑_ = Neu
   _⊩_  = Forces
   _⊩*_ = ForcesCtx
 
-  -- Γ entails α in the Kripke model if any world Δ forces α whenever
-  -- Δ forces Γ
+  -- Γ entails α in the Kripke model if any world (context) Δ forces α
+  -- whenever Δ forces Γ.
   _⊧_ : Ctx Type → Type → Set
   Γ ⊧ α = ∀ {Δ} → Δ ⊩* Γ → Δ ⊩ α
 
@@ -33,22 +32,24 @@ module NBE where
   -- the soundness theorem for intuitionistic propositional logic with
   -- respect to entailment in a Kripke model.
   soundness : ∀ {Γ α} → Γ ⊢ α → Γ ⊧ α
-  soundness (var x)   ρ = lookup ρ x
-  soundness (ƛ e)     ρ = λ Δ≤Σ x → soundness e (wknCtx Δ≤Σ ρ ▸ x)
-  soundness (e₁ · e₂) ρ = (soundness e₁ ρ) ≤-refl (soundness e₂ ρ)
+  soundness (var x)   σ = [ σ ] x
+  soundness (ƛ e)     σ = λ Δ≤Σ x → soundness e (wknSub Δ≤Σ σ ▸ x)
+  soundness (e₁ · e₂) σ = (soundness e₁ σ) ≤-refl (soundness e₂ σ)
 
   mutual
-    -- Quote a semantic value in the Kripke model to a normal term
+    -- Quote (reify) a semantic value in the Kripke model to a normal
+    -- form.
     ⌜_⌝ : ∀ {Γ α} → Γ ⊩ α → Γ ⊢↓ α
     ⌜_⌝ {α = ●}     x = neu x
-    ⌜_⌝ {α = α ⇒ β} f = ƛ ⌜ f refl-incr ⌞ var vz ⌟ ⌝
+    ⌜_⌝ {α = α ⇒ β} f = ƛ ⌜ f (▸-incr ≤-refl) ⌞ var vz ⌟ ⌝
 
-    -- Unquote a neutral term to a semantic value in the Kripke model
+    -- Unquote (reflect) a neutral form to a semantic value in the
+    -- Kripke model.
     ⌞_⌟ : ∀ {Γ α} → Γ ⊢↑ α → Γ ⊩ α
     ⌞_⌟ {α = ●}     x = x
     ⌞_⌟ {α = α ⇒ β} f = λ Δ≤Σ x → ⌞ wknNeu Δ≤Σ f · ⌜ x ⌝ ⌟
 
-  -- The identity substitution
+  -- The identity substitution.
   id-⊩* : ∀ {Γ} → Γ ⊩* Γ
   id-⊩* {Γ} = tabulate var-⊩
     where
@@ -61,10 +62,10 @@ module NBE where
   -- intuitionistic propositional logic with respect to entailment in
   -- a Kripke model.
   completeness : ∀ {Γ α} → Γ ⊧ α → Γ ⊢ α
-  completeness ρ = termOfNrm ⌜ ρ id-⊩* ⌝
+  completeness γ = termOfNrm ⌜ γ id-⊩* ⌝
 
   -- Normalization by evaluation, i.e., reduction-free normalization.
   -- Maps a term to its meaning in the Kripke model then extracts the
-  -- meaning into a canonical term (β-normal, η-long).
+  -- meaning into a canonical (β-normal, η-long) term.
   nbe : ∀ {Γ α} → Γ ⊢ α → Γ ⊢ α
   nbe = completeness ∘ soundness
