@@ -15,7 +15,7 @@ module NBE where
   open import Weaken
 
   -- The following type aliases are intended to make the logical
-  -- structure of the nbe algorithm more evident from the type
+  -- structure of the nbe algorithm more apparent from the type
   -- signatures.
   _⊢_  = Term
   _⊢↓_ = Nrm
