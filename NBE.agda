@@ -54,8 +54,8 @@ module NBE where
   id-⊩* {Γ} = tabulate var-⊩
     where
       var-⊩ : {α : Type} → Var Γ α → Γ ⊩ α
-      var-⊩ {●}     = var
-      var-⊩ {α ⇒ β} = λ f ρ x → ⌞ var (lookup ρ f) · ⌜ x ⌝ ⌟
+      var-⊩ {●}     x = var x
+      var-⊩ {α ⇒ β} f = λ ρ x → ⌞ var (lookup ρ f) · ⌜ x ⌝ ⌟
 
   -- The inverse of the meaning function can be viewed as the
   -- constructive content of the completeness theorem for
