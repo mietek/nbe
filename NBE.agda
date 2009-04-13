@@ -28,12 +28,12 @@ module NBE where
   _⊧_ : Ctx Type → Type → Set
   Γ ⊧ α = ∀ {Δ} → Δ ⊩* Γ → Δ ⊩ α
 
-  -- The meaning function can be viewed as the constructive content of
-  -- the soundness theorem for intuitionistic propositional logic with
-  -- respect to entailment in a Kripke model.
+  -- The meaning function can be viewed as the computational content
+  -- of the soundness theorem for intuitionistic propositional logic
+  -- with respect to entailment in a Kripke model.
   soundness : ∀ {Γ α} → Γ ⊢ α → Γ ⊧ α
   soundness (var x)   σ = [ σ ] x
-  soundness (ƛ e)     σ = λ Δ≤Σ x → soundness e (wknSub Δ≤Σ σ ▸ x)
+  soundness (ƛ e)     σ = λ Δ≤Σ x → soundness e (wknSub* Δ≤Σ σ ▸ x)
   soundness (e₁ · e₂) σ = (soundness e₁ σ) ≤-refl (soundness e₂ σ)
 
   mutual
@@ -41,13 +41,13 @@ module NBE where
     -- form.
     ⌜_⌝ : ∀ {Γ α} → Γ ⊩ α → Γ ⊢↓ α
     ⌜_⌝ {α = ●}     x = neu x
-    ⌜_⌝ {α = α ⇒ β} f = ƛ ⌜ f (▸-incr ≤-refl) ⌞ var vz ⌟ ⌝
+    ⌜_⌝ {α = α ⇒ β} f = ƛ ⌜ f ▸-step ⌞ var vz ⌟ ⌝
 
     -- Unquote (reflect) a neutral form to a semantic value in the
     -- Kripke model.
     ⌞_⌟ : ∀ {Γ α} → Γ ⊢↑ α → Γ ⊩ α
     ⌞_⌟ {α = ●}     x = x
-    ⌞_⌟ {α = α ⇒ β} f = λ Δ≤Σ x → ⌞ wknNeu Δ≤Σ f · ⌜ x ⌝ ⌟
+    ⌞_⌟ {α = α ⇒ β} f = λ Δ≤Σ x → ⌞ wknNeu* Δ≤Σ f · ⌜ x ⌝ ⌟
 
   -- The identity substitution.
   id-⊩* : ∀ {Γ} → Γ ⊩* Γ
@@ -58,7 +58,7 @@ module NBE where
       var-⊩ {α = α ⇒ β} f = λ ρ x → ⌞ var (lookup ρ f) · ⌜ x ⌝ ⌟
 
   -- The inverse of the meaning function can be viewed as the
-  -- constructive content of the completeness theorem for
+  -- computational content of the completeness theorem for
   -- intuitionistic propositional logic with respect to entailment in
   -- a Kripke model.
   completeness : ∀ {Γ α} → Γ ⊧ α → Γ ⊢ α
