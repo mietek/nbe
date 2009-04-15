@@ -32,9 +32,9 @@ module NBE where
   -- of the soundness theorem for intuitionistic propositional logic
   -- with respect to entailment in a Kripke model.
   soundness : ∀ {Γ α} → Γ ⊢ α → Γ ⊧ α
-  soundness (var x)   σ = [ σ ] x
-  soundness (ƛ e)     σ = λ Δ≤Σ x → soundness e (wknSub* Δ≤Σ σ ▸ x)
-  soundness (e₁ · e₂) σ = (soundness e₁ σ) ≤-refl (soundness e₂ σ)
+  soundness (var x)   ρ = lookup ρ x
+  soundness (ƛ e)     ρ = λ Γ≤Δ v → soundness e (wknSub* Γ≤Δ ρ ▸ v)
+  soundness (e₁ · e₂) ρ = (soundness e₁ ρ) ≤-refl (soundness e₂ ρ)
 
   mutual
     -- Quote (reify) a semantic value in the Kripke model to a normal
@@ -47,15 +47,16 @@ module NBE where
     -- Kripke model.
     ⌞_⌟ : ∀ {Γ α} → Γ ⊢↑ α → Γ ⊩ α
     ⌞_⌟ {α = ●}     x = x
-    ⌞_⌟ {α = α ⇒ β} f = λ Δ≤Σ x → ⌞ wknNeu* Δ≤Σ f · ⌜ x ⌝ ⌟
+    ⌞_⌟ {α = α ⇒ β} f = λ Γ≤Δ x → ⌞ wknNeu* Γ≤Δ f · ⌜ x ⌝ ⌟
 
-  -- The identity substitution.
+  -- Convert a variable to a value in the model.
+  var-⊩ : ∀ {Γ α} → Var Γ α → Γ ⊩ α
+  var-⊩ {α = ●}     x = var x
+  var-⊩ {α = α ⇒ β} f = λ Γ≤Δ x → ⌞ var (lookup Γ≤Δ f) · ⌜ x ⌝ ⌟
+
+  -- The identity environment.
   id-⊩* : ∀ {Γ} → Γ ⊩* Γ
-  id-⊩* {Γ} = tabulate var-⊩
-    where
-      var-⊩ : ∀ {α} → Var Γ α → Γ ⊩ α
-      var-⊩ {α = ●}     x = var x
-      var-⊩ {α = α ⇒ β} f = λ ρ x → ⌞ var (lookup ρ f) · ⌜ x ⌝ ⌟
+  id-⊩* = tabulate var-⊩
 
   -- The inverse of the meaning function can be viewed as the
   -- computational content of the completeness theorem for

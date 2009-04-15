@@ -11,7 +11,7 @@ module Syntax where
     ●   : Type
     _⇒_ : Type → Type → Type
 
-  infixl 1 _·_
+  infixl 5 _·_
   data Term : Ctx Type → Type → Set where
     var : ∀ {Γ α  } → Var Γ α → Term Γ α
     ƛ_  : ∀ {Γ α β} → Term (Γ ▸ α) β → Term Γ (α ⇒ β)

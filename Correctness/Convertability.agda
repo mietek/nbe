@@ -7,11 +7,11 @@ module Correctness.Convertability where
 
   open import Correctness.Substitution
 
-  infix 0 _≈βη_
-  data _≈βη_ {Γ : Ctx Type} : ∀ {α} → Term Γ α → Term Γ α → Set where
+  infix 0 _≃_
+  data _≃_ {Γ : Ctx Type} : ∀ {α} → Term Γ α → Term Γ α → Set where
     β-red : ∀ {α β} (e₁ : Term (Γ ▸ β) α) {e₂}
-          → ƛ e₁ · e₂ ≈βη subst e₁ e₂
+          → ƛ e₁ · e₂ ≃ subst e₁ e₂
 
     η-exp : ∀ {α β} {e : Term Γ (α ⇒ β)}
-          → e ≈βη ƛ (wknTerm e · var vz)
+          → e ≃ ƛ (wknTerm e · var vz)
 

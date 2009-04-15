@@ -19,7 +19,3 @@ module Forcing where
   -- forces everything in Δ
   ForcesCtx : Ctx Type → Ctx Type → Set
   ForcesCtx Γ Δ = Box (Forces Γ) Δ
-
-  -- Apply a substitution to a variable.
-  [_]_ : ∀ {Γ Δ α} → ForcesCtx Γ Δ → Var Δ α → Forces Γ α
-  [_]_ = lookup

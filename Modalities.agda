@@ -41,13 +41,13 @@ module Modalities where
   find .(Γ ▸ α) (here  {Γ} {α} p) = α , p
   find .(Γ ▸ α) (there {Γ} {α} p) = find Γ p
 
-  lookup : {χ : Set} {ϕ : χ → Set} {α : χ} {Γ : Ctx χ}
+  lookup : {χ : Set} {ϕ : χ → Set} {Γ : Ctx χ} {α : χ}
          → Box ϕ Γ → Dia (_≡_ α) Γ → ϕ α
   lookup {Γ = ε} _           ()
   lookup         (_   ▸ ϕ-α) (here  refl) = ϕ-α
-  lookup         (ϕ-Γ ▸ _  ) (there ps)   = lookup ϕ-Γ ps
+  lookup         (ϕ-Γ ▸ _  ) (there p)    = lookup ϕ-Γ p
 
   tabulate : {χ : Set} {ϕ : χ → Set} {Γ : Ctx χ}
            → ({α : χ} → Dia (_≡_ α) Γ → ϕ α) → Box ϕ Γ
   tabulate {Γ = ε}     f = ε
-  tabulate {Γ = Γ ▸ α} f = tabulate (f ∘ there) ▸ f (here refl)
+  tabulate {Γ = _ ▸ _} f = tabulate (f ∘ there) ▸ f (here refl)
