@@ -1,53 +1,77 @@
 -------------------------------------------------------------------------------
--- Modalities
+-- Type Modalities (a.k.a. Predicate Transformers)
 -------------------------------------------------------------------------------
 
--- The code in the following module is used primarily to make
--- weakening and environments easy to deal with.
-
--- See Peter Morris's thesis for info on Box, Dia, fill, find, etc.
+-- See Peter Morris's thesis for background.
 
 module Modalities where
-  open import Data.Function
-    using (_∘_)
   open import Data.Product
-    hiding (map)
-  open import Relation.Binary.PropositionalEquality
+    using ( Σ
+          ; ,_ )
+  open import Relation.Unary
+    using ( Pred
+          ; _∈_ )
 
   open import Ctx
 
-  data Box {χ : Set} (ϕ : χ → Set) : Ctx χ → Set where
+-------------------------------------------------------------------------------
+-- I want universe polymorphism...
+
+  Rel : Set → Set → Set1
+  Rel α β = α → β → Set
+
+  EndoRel : Set → Set1
+  EndoRel α = Rel α α
+
+  EndoRel₁₁ : Set1 → Set1
+  EndoRel₁₁ α = α → α → Set
+
+-------------------------------------------------------------------------------
+-- Predicate Inclusion
+
+  _⊆_ : ∀ {χ} → EndoRel₁₁ (Pred χ)
+  ϕ ⊆ φ = ∀ {α} → α ∈ ϕ → α ∈ φ
+
+-------------------------------------------------------------------------------
+-- Box (a.k.a. Everywhere) Modality
+
+  data Box {χ} (ϕ : Pred χ) : Pred (Ctx χ) where
     ε   : Box ϕ ε
-    _▸_ : ∀ {Γ α} → Box ϕ Γ → ϕ α → Box ϕ (Γ ▸ α)
 
-  fill : {χ : Set} {ϕ : χ → Set} (Γ : Ctx χ) → ((α : χ) → ϕ α) → Box ϕ Γ
-  fill ε       f = ε
-  fill (Γ ▸ α) f = fill Γ f ▸ f α
+    _▸_ : ∀ {Γ α}
+        → (Γ□  : Box ϕ Γ)
+        → (ϕ-α : ϕ α)
+        → Box ϕ (Γ ▸ α)
 
-  -- Already defined in Relation.Unary, but χ is not implicit, making
-  -- it slightly more annoying to work with than this version.
-  _⊆_ : {χ : Set} → (χ → Set) → (χ → Set) → Set
-  P ⊆ Q = ∀ {α} → P α → Q α
+  -- Pretty Pi
+  Π : ∀ χ → Pred χ → Set
+  Π χ ϕ = (α : χ) → ϕ α
 
-  map : {χ : Set} {ϕ φ : χ → Set} → ϕ ⊆ φ → Box ϕ ⊆ Box φ
-  map f ε       = ε
-  map f (Γ ▸ α) = map f Γ ▸ f α
+  -- Dual to find
+  fill : ∀ {χ ϕ} {Γ : Ctx χ} → Π χ ϕ → Box ϕ Γ
+  fill {Γ = ε}     f = ε
+  fill {Γ = Γ ▸ α} f = fill f ▸ f α
 
-  data Dia {χ : Set} (ϕ : χ → Set) : Ctx χ → Set where
-    here  : ∀ {Γ α} → ϕ α → Dia ϕ (Γ ▸ α)
-    there : ∀ {Γ α} → Dia ϕ Γ → Dia ϕ (Γ ▸ α)
+-------------------------------------------------------------------------------
+-- Dia (a.k.a. Somewhere) Modality
 
-  find : {χ : Set} {ϕ : χ → Set} (Γ : Ctx χ) → Dia ϕ Γ → Σ χ (λ α → ϕ α)
-  find .(Γ ▸ α) (here  {Γ} {α} p) = α , p
-  find .(Γ ▸ α) (there {Γ} {α} p) = find Γ p
+  data Dia {χ} (ϕ : Pred χ) : Pred (Ctx χ) where
+    here  : ∀ {Γ α}
+          → (ϕ-α : ϕ α)
+          → Dia ϕ (Γ ▸ α)
 
-  lookup : {χ : Set} {ϕ : χ → Set} {Γ : Ctx χ} {α : χ}
-         → Box ϕ Γ → Dia (_≡_ α) Γ → ϕ α
-  lookup {Γ = ε} _           ()
-  lookup         (_   ▸ ϕ-α) (here  refl) = ϕ-α
-  lookup         (ϕ-Γ ▸ _  ) (there p)    = lookup ϕ-Γ p
+    there : ∀ {Γ α}
+          → (Γ◇  : Dia ϕ Γ)
+          → Dia ϕ (Γ ▸ α)
 
-  tabulate : {χ : Set} {ϕ : χ → Set} {Γ : Ctx χ}
-           → ({α : χ} → Dia (_≡_ α) Γ → ϕ α) → Box ϕ Γ
-  tabulate {Γ = ε}     f = ε
-  tabulate {Γ = _ ▸ _} f = tabulate (f ∘ there) ▸ f (here refl)
+  -- Dual to fill
+  find : ∀ {χ ϕ Γ} → Dia ϕ Γ → Σ χ ϕ
+  find (here  ϕ-α) = , ϕ-α
+  find (there Γ◇)  = find Γ◇
+
+-------------------------------------------------------------------------------
+-- Operations
+
+  map : ∀ {χ} {ϕ φ : Pred χ} → ϕ ⊆ φ → Box ϕ ⊆ Box φ
+  map f ε          = ε
+  map f (Γ□ ▸ ϕ-α) = map f Γ□ ▸ f ϕ-α

@@ -11,6 +11,7 @@ module Weaken where
   open import Modalities
   open import Subsumption
   open import Syntax
+  open import Vars
 
   -- Arbitrarily weaken a term
   wknTerm* : ∀ {Γ Δ} → Γ ≤ Δ → Term Γ ⊆ Term Δ
@@ -36,12 +37,12 @@ module Weaken where
   -- If Δ subsumes Γ, then whatever proposition (type) Γ forces, Δ
   -- also forces.  We can view this as letting us convert semantic
   -- values under one context to another.
-  wknForces* : ∀ {Γ Δ} → Γ ≤ Δ → Forces Γ ⊆ Forces Δ
-  wknForces* Γ≤Δ {●}     ne = wknNeu* Γ≤Δ ne
-  wknForces* Γ≤Δ {α ⇒ β} f  = λ Δ≤Σ v → f (≤-trans Γ≤Δ Δ≤Σ) v
+  wknVal* : ∀ {Γ Δ} → Γ ≤ Δ → Val Γ ⊆ Val Δ
+  wknVal* Γ≤Δ {●}     ne = wknNeu* Γ≤Δ ne
+  wknVal* Γ≤Δ {α ⇒ β} f  = λ Δ≤Σ v → f (≤-trans Γ≤Δ Δ≤Σ) v
 
   -- If Δ subsumes Γ, then whatever world (context) Γ forces, Δ also
   -- forces.  We can view this as letting us change the codomain of a
   -- substitution.
-  wknSub* : ∀ {Γ Δ} → Γ ≤ Δ → ForcesCtx Γ ⊆ ForcesCtx Δ
-  wknSub* = map ∘ wknForces*
+  wknEnv* : ∀ {Γ Δ} → Γ ≤ Δ → Env Γ ⊆ Env Δ
+  wknEnv* = map ∘ wknVal*

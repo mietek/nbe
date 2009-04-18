@@ -1,6 +1,6 @@
 module Correctness.Substitution where
   open import Relation.Binary.PropositionalEquality
-    hiding (subst)
+    using ( refl )
 
   open import Ctx
   open import Modalities
@@ -18,9 +18,9 @@ module Correctness.Substitution where
   substSim σ (ƛ e)     = ƛ substSim (lift σ) e
   substSim σ (e₁ · e₂) = substSim σ e₁ · substSim σ e₂
 
-  subst : ∀ {Γ α β} → Term (Γ ▸ α) β → Term Γ α → Term Γ β
-  subst {Γ} {α} e₁ e₂ = substSim σ e₁
+  subst : ∀ {Γ α} → Term Γ α → Term (Γ ▸ α) ⊆ Term Γ
+  subst {Γ} {α} e₁ e₂ = substSim σ e₂
     where
       σ : Var (Γ ▸ α) ⊆ Term Γ
-      σ (here  refl) = e₂
+      σ (here  refl) = e₁
       σ (there x)    = var x

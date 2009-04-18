@@ -1,12 +1,18 @@
 module Correctness.Soundness where
   open import Data.Function
-    using (id; _∘_)
+    using    ( _∘_ )
   open import Data.Product
   open import Data.Unit
-    hiding (_≤_)
+    using    ( ⊤
+             ; tt )
+  open import Relation.Binary
+    using    ( Rel
+             ; Symmetric
+             ; Transitive )
   open import Relation.Binary.PropositionalEquality
-    renaming (subst to ≡-subst)
-  open ≡-Reasoning
+    renaming ( refl  to ≡-refl
+             ; sym   to ≡-sym
+             ; trans to ≡-trans )
 
   open import Ctx
   open import Forcing
@@ -18,71 +24,59 @@ module Correctness.Soundness where
   open import Weaken
 
   open import Correctness.Convertability
-  open import Correctness.Substitution
 
-  module ModalitiesEnv where
-    -- FIXME: Find a way to generalize this stuff so we only need one
-    -- version of Box and Dia.  Maybe we can parameterize the
-    -- modalities module?
-    data BoxEnv {Γ} (φ : ∀ {α} → Forces Γ α → Set) : ∀ {Δ} → ForcesCtx Γ Δ → Set where
-      ε   : BoxEnv φ ε
-      _▸_ : ∀ {Δ α} {ρ : ForcesCtx Γ Δ} {v : Forces Γ α} → BoxEnv φ ρ → φ v → BoxEnv φ (ρ ▸ v)
-
-    data DiaEnv {Γ} {α} (φ : Forces Γ α → Set) : ∀ {Δ} → ForcesCtx Γ Δ → Set where
-      here  : ∀ {Δ}   {ρ : ForcesCtx Γ Δ} {v : Forces Γ α} → φ v → DiaEnv φ (ρ ▸ v)
-      there : ∀ {Δ β} {ρ : ForcesCtx Γ Δ} {v : Forces Γ β} → DiaEnv φ ρ → DiaEnv φ (ρ ▸ v)
-
-    _≈_ : ∀ {Γ Δ} → ForcesCtx Γ Δ → ForcesCtx Γ Δ → Set
-    ρ₁ ≈ ρ₂ = BoxEnv (λ v → DiaEnv (_≡_ v) ρ₂) ρ₁
-
-    lookupEnv : ∀ {Γ Δ α} {φ : ∀ {β} → Forces Γ β → Set} {ρ : ForcesCtx Γ Δ} {v : Forces Γ α}
-              → BoxEnv φ ρ
-              → DiaEnv (_≡_ v) ρ
-              → φ v
-    lookupEnv {ρ = ε} _           ()
-    lookupEnv         (_   ▸ φ-v) (here  refl) = φ-v
-    lookupEnv         (φ-ρ ▸ _  ) (there p)    = lookupEnv φ-ρ p
-
-    tabulateEnv : ∀ {Γ Δ} {φ : ∀ {α} → Forces Γ α → Set} {ρ : ForcesCtx Γ Δ}
-                → (∀ {α} {v : Forces Γ α} → DiaEnv (_≡_ v) ρ → φ v) → BoxEnv φ ρ
-    tabulateEnv {ρ = ε}     f = ε
-    tabulateEnv {ρ = _ ▸ _} f = tabulateEnv (f ∘ there) ▸ f (here refl)
-
-  open ModalitiesEnv
-
-  _∼_ : ∀ {Γ α} → Forces Γ α → Forces Γ α → Set
+  -- The family of partial equivalence relations (PERs).  This gives
+  -- us a PER model at each context and type.  This cannot be defined
+  -- as an inductive family because it is not strictly positive in the
+  -- α ⇒ β case.
+  _∼_ : ∀ {Γ α} → EndoRel (Val Γ α)
   _∼_ {Γ = Γ} {α = ●}     x₁ x₂ = ⌜ x₁ ⌝ ≡ ⌜ x₂ ⌝
   _∼_ {Γ = Γ} {α = α ⇒ β} f₁ f₂ = ∀ {Δ x₁ x₂} (Γ≤Δ : Γ ≤ Δ) → x₁ ∼ x₂ → f₁ Γ≤Δ x₁ ∼ f₂ Γ≤Δ x₂
 
---   _≈_ : ∀ {Γ Δ} → ForcesCtx Γ Δ → ForcesCtx Γ Δ → Set
---   ε         ≈ ε         = ⊤
---   (ρ₁ ▸ v₁) ≈ (ρ₂ ▸ v₂) = ρ₁ ≈ ρ₂ × v₁ ∼ v₂
-
   mutual
-    lemma₁ : ∀ {Γ α} {d₁ d₂ : Forces Γ α} → d₁ ∼ d₂ → ⌜ d₁ ⌝ ≡ ⌜ d₂ ⌝
-    lemma₁ {α = ●}     d₁≡d₂ = d₁≡d₂
-    lemma₁ {α = α ⇒ β} d₁~d₂ = cong ƛ_ (lemma₁ (d₁~d₂ ▸-step (lemma₂ refl)))
+    -- Related values in the Kripke model have identical quotations.
+    ~≡↓ : ∀ {Γ α} {v₁ v₂ : Val Γ α} → v₁ ∼ v₂ → ⌜ v₁ ⌝ ≡ ⌜ v₂ ⌝
+    ~≡↓ {α = ●}     ≡-refl = ≡-refl
+    ~≡↓ {α = α ⇒ β} f      = cong ƛ_ (~≡↓ (f ▸-step (≡↑~ ≡-refl)))
 
-    lemma₂ : ∀ {Γ α} {ne₁ ne₂ : Neu Γ α} → ne₁ ≡ ne₂ → ⌞ ne₁ ⌟ ∼ ⌞ ne₂ ⌟
-    lemma₂ {α = ●}                 refl = refl
-    lemma₂ {α = α ⇒ β} {ne₂ = ne₂} refl = λ Γ≤Δ x₁~x₂ → lemma₂ (cong (λ x → wknNeu* Γ≤Δ ne₂ · x) (lemma₁ x₁~x₂))
+    -- Identical neutral terms have related unquotations in the Kripke model.
+    ≡↑~ : ∀ {Γ α} {ne₁ ne₂ : Neu Γ α} → ne₁ ≡ ne₂ → ⌞ ne₁ ⌟ ∼ ⌞ ne₂ ⌟
+    ≡↑~ {α = ●}     ≡-refl = ≡-refl
+    ≡↑~ {α = α ⇒ β} ≡-refl = λ Γ≤Δ → ≡↑~ ∘ cong (_·_ (wknNeu* Γ≤Δ _)) ∘ ~≡↓
 
-  ∼-refl : ∀ (Γ : Ctx Type) (α : Type) (x : Var Γ α) → var-⊩ x ∼ var-⊩ x
-  ∼-refl Γ ●       _ = refl
-  ∼-refl Γ (α ⇒ β) x = λ Γ≤Δ x₁∼x₂ → lemma₂ (cong (λ x′ → var (lookup Γ≤Δ x) · x′) (lemma₁ x₁∼x₂))
+  -- _∼_ is reflexive (for variables) at all contexts and types.
+  ∼-refl : ∀ {Γ : Ctx Type} {α : Type} (x : Var Γ α) → ∋→⊩ x ∼ ∋→⊩ x
+  ∼-refl {α = ●}     x = ≡-refl
+  ∼-refl {α = α ⇒ β} x = λ Γ≤Δ → ≡↑~ ∘ cong (_·_ (var (lookup Γ≤Δ x))) ∘ ~≡↓
 
-  ≈-refl : ∀ Γ → id-⊩* {Γ} ≈ id-⊩* {Γ}
-  ≈-refl Γ = tabulateEnv id
+  -- _∼_ is symmetric at all contexts and types.
+  ∼-sym : ∀ {Γ α} → Symmetric (_∼_ {Γ = Γ} {α = α})
+  ∼-sym {α = ●}     p = ≡-sym p
+  ∼-sym {α = α ⇒ β} p = λ Γ≤Δ → ∼-sym ∘ p Γ≤Δ ∘ ∼-sym
 
---   ≈-refl : ∀ Γ → id-⊩* {Γ} ≈ id-⊩* {Γ}
---   ≈-refl ε       = tt
---   ≈-refl (Γ ▸ α) = {!!} , ∼-refl (Γ ▸ α) α vz
+  -- _∼_ is transitive at all contexts and types.
+  ∼-trans : ∀ {Γ α} → Transitive (_∼_ {Γ = Γ} {α = α})
+  ∼-trans {α = ●}     p₁ p₂ = ≡-trans p₁ p₂
+  ∼-trans {α = α ⇒ β} p₁ p₂ = λ Γ≤Δ x₁∼x₂ → ∼-trans (p₁ Γ≤Δ x₁∼x₂) (p₂ Γ≤Δ (∼-trans (∼-sym x₁∼x₂) x₁∼x₂))
 
-  lemma₃ : ∀ {Γ α} {e₁ e₂ : Term Γ α} {ρ₁ ρ₂ : ForcesCtx Γ Γ}
-         → ρ₁ ≈ ρ₂
-         → e₁ ≃ e₂
-         → soundness e₁ ρ₁ ∼ soundness e₂ ρ₂
-  lemma₃ = {!!}
+  -- The PER ∼ extended to environments.  Could use modalities for
+  -- this too although it might make the other stuff harder to prove.
+  _≈_ : ∀ {Γ Δ} → EndoRel (Env Γ Δ)
+  ε         ≈ ε         = ⊤
+  (ρ₁ ▸ v₁) ≈ (ρ₂ ▸ v₂) = v₁ ∼ v₂ × ρ₁ ≈ ρ₂
+
+  postulate
+    -- The identity environment is related to itself.
+    ≈-refl : ∀ {Γ} → ⊩*-id {Γ} ≈ ⊩*-id {Γ}
+
+    lemma : ∀ {Γ α} (e : Term Γ α) {ρ₁ ρ₂ : Env Γ Γ}
+          → ρ₁ ≈ ρ₂
+          → soundness e ρ₁ ∼ soundness e ρ₂
+
+    logRel : ∀ {Γ α} {e₁ e₂ : Term Γ α} {ρ₁ ρ₂ : Env Γ Γ}
+           → ρ₁ ≈ ρ₂
+           → e₁ ≃ e₂
+           → soundness e₁ ρ₁ ∼ soundness e₂ ρ₂
 
   nbe-soundness : ∀ {Γ α} {e₁ e₂ : Term Γ α} → e₁ ≃ e₂ → nbe e₁ ≡ nbe e₂
-  nbe-soundness {Γ} = cong termOfNrm ∘ lemma₁ ∘ lemma₃ (≈-refl Γ)
+  nbe-soundness {Γ} = cong termOfNrm ∘ ~≡↓ ∘ logRel (≈-refl {Γ})
