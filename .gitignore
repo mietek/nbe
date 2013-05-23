@@ -1,7 +1,101 @@
-*~
-.DS_Store
+### Agda
+
 .*.agda.el
 *.agdai
-Makefile
-agda
-src/find_deps.rb
+
+### Emacs.gitignore
+
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+.elc
+auto-save-list
+tramp
+.\#*
+
+# Org-mode
+.org-id-locations
+*_archive
+
+
+### OSX.gitignore
+
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+
+
+# Thumbnails
+._*
+
+# Files that might appear on external disk
+.Spotlight-V100
+.Trashes
+
+
+### Linux.gitignore
+
+.*
+!.gitignore
+*~
+
+
+### Ruby.gitignore
+
+*.gem
+*.rbc
+.bundle
+.config
+coverage
+InstalledFiles
+lib/bundler/man
+pkg
+rdoc
+spec/reports
+test/tmp
+test/version_tmp
+tmp
+
+# YARD artifacts
+.yardoc
+_yardoc
+doc/
+
+
+### SublimeText.gitignore
+
+# SublimeText project files
+*.sublime-workspace
+
+
+### TextMate.gitignore
+
+*.tmproj
+*.tmproject
+tmtags
+
+
+### vim.gitignore
+
+.*.s[a-w][a-z]
+*.un~
+Session.vim
+.netrwhist
+*~
+
+
+### Windows.gitignore
+
+# Windows image file caches
+Thumbs.db
+ehthumbs.db
+
+# Folder config file
+Desktop.ini
+
+# Recycle Bin used on file shares
+$RECYCLE.BIN/
+
+
