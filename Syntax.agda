@@ -3,13 +3,8 @@
 -------------------------------------------------------------------------------
 
 module Syntax where
-  open import Relation.Unary
-    using ( Pred )
-
   open import Ctx
-  open import Modalities
-    using ( Rel
-          ; _⊆_ )
+  open import Predicates
   open import Vars
 
   infixr 1 _⇒_

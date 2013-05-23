@@ -8,29 +8,9 @@ module Modalities where
   open import Data.Product
     using ( Σ
           ; ,_ )
-  open import Relation.Unary
-    using ( Pred
-          ; _∈_ )
 
   open import Ctx
-
--------------------------------------------------------------------------------
--- I want universe polymorphism...
-
-  Rel : Set → Set → Set1
-  Rel α β = α → β → Set
-
-  EndoRel : Set → Set1
-  EndoRel α = Rel α α
-
-  EndoRel₁₁ : Set1 → Set1
-  EndoRel₁₁ α = α → α → Set
-
--------------------------------------------------------------------------------
--- Predicate Inclusion
-
-  _⊆_ : ∀ {χ} → EndoRel₁₁ (Pred χ)
-  ϕ ⊆ φ = ∀ {α} → α ∈ ϕ → α ∈ φ
+  open import Predicates
 
 -------------------------------------------------------------------------------
 -- Box (a.k.a. Everywhere) Modality
@@ -42,10 +22,6 @@ module Modalities where
         → (Γ□  : Box ϕ Γ)
         → (ϕ-α : ϕ α)
         → Box ϕ (Γ ▸ α)
-
-  -- Pretty Pi
-  Π : ∀ χ → Pred χ → Set
-  Π χ ϕ = (α : χ) → ϕ α
 
   -- Dual to find
   fill : ∀ {χ ϕ} {Γ : Ctx χ} → Π χ ϕ → Box ϕ Γ

@@ -1,13 +1,11 @@
 -------------------------------------------------------------------------------
--- The Forcing relations for the Kripke structure
+-- The Krikpe Model
 -------------------------------------------------------------------------------
 
-module Forcing where
-  open import Relation.Unary
-    using ( Pred )
-
+module Model where
   open import Ctx
   open import Modalities
+  open import Predicates
   open import Subsumption
   open import Syntax
   open import Vars
@@ -17,7 +15,7 @@ module Forcing where
   -- 'Val Γ α' can be read as 'Value Γ α'.
   Val : Rel (Ctx Type) Type
   Val Γ ●       = Neu Γ ●
-  Val Γ (α ⇒ β) = ∀ {Δ} → Γ ≤ Δ → Val Δ α → Val Δ β
+  Val Γ (α ⇒ β) = ∀ {Δ} → Δ ⊇ Γ → Val Δ α → Val Δ β
 
   -- The forcing relation with respect to a context (Γ ⊩* Δ), i.e., Γ
   -- forces everything in Δ. 'Env Γ Δ' can be read as 'Env Γ Δ'.

@@ -4,6 +4,7 @@ module Correctness.Substitution where
 
   open import Ctx
   open import Modalities
+  open import Predicates
   open import Subsumption
   open import Syntax
   open import Vars

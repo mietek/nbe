@@ -7,8 +7,8 @@ module NBE where
     using (_∘_)
 
   open import Ctx
-  open import Forcing
   open import Modalities
+  open import Model
   open import Subsumption
   open import Syntax
   open import Vars
@@ -36,8 +36,8 @@ module NBE where
   -- propositional logic with respect to entailment in a Kripke model.
   soundness : ∀ {Γ α} → Γ ⊢ α → Γ ⊧ α
   soundness (var x)   ρ = lookup ρ x
-  soundness (ƛ e)     ρ = λ Δ≤Σ v → soundness e (wknEnv* Δ≤Σ ρ ▸ v)
-  soundness (e₁ · e₂) ρ = (soundness e₁ ρ) ≤-refl (soundness e₂ ρ)
+  soundness (ƛ e)     ρ = λ Σ⊇Δ v → soundness e (wknEnv* Σ⊇Δ ρ ▸ v)
+  soundness (e₁ · e₂) ρ = (soundness e₁ ρ) ⊇-refl (soundness e₂ ρ)
 
 -------------------------------------------------------------------------------
 -- Completeness (Hard Part)
@@ -53,23 +53,23 @@ module NBE where
     -- Kripke model.
     ⌞_⌟ : ∀ {Γ α} → Γ ↑ α → Γ ⊩ α
     ⌞_⌟ {α = ●}     x = x
-    ⌞_⌟ {α = α ⇒ β} f = λ Γ≤Δ x → ⌞ wknNeu* Γ≤Δ f · ⌜ x ⌝ ⌟
+    ⌞_⌟ {α = α ⇒ β} f = λ Δ⊇Γ x → ⌞ wknNeu* Δ⊇Γ f · ⌜ x ⌝ ⌟
 
   -- Convert a variable to a value in the model.
-  ∋→⊩ : ∀ {Γ α} → Γ ∋ α → Γ ⊩ α
-  ∋→⊩ {α = ●}     x = var x
-  ∋→⊩ {α = α ⇒ β} f = λ Γ≤Δ x → ⌞ var (lookup Γ≤Δ f) · ⌜ x ⌝ ⌟
+  varToVal : ∀ {Γ α} → Γ ∋ α → Γ ⊩ α
+  varToVal {α = ●}     x = var x
+  varToVal {α = α ⇒ β} f = λ Δ⊇Γ x → ⌞ var (lookup Δ⊇Γ f) · ⌜ x ⌝ ⌟
 
   -- The identity environment.
-  ⊩*-id : ∀ {Γ} → Γ ⊩* Γ
-  ⊩*-id = tabulate ∋→⊩
+  idEnv : ∀ {Γ} → Γ ⊩* Γ
+  idEnv = tabulate varToVal
 
   -- The inverse of the meaning function can be viewed as the
   -- computational content of the completeness theorem for deduction
   -- in intuitionistic propositional logic with respect to entailment
   -- in a Kripke model.
   completeness : ∀ {Γ α} → Γ ⊧ α → Γ ⊢ α
-  completeness v = termOfNrm ⌜ v ⊩*-id ⌝
+  completeness v = termOfNrm ⌜ v idEnv ⌝
 
 -------------------------------------------------------------------------------
 -- Normalization by Evaluation (a.k.a. Reduction-free normalization)

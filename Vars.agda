@@ -8,11 +8,10 @@ module Vars {χ : Set} where
   open import Relation.Binary.PropositionalEquality
     using ( _≡_
           ; refl )
-  open import Relation.Unary
-    using ( Pred )
 
   open import Ctx
   open import Modalities
+  open import Predicates
 
 -------------------------------------------------------------------------------
 -- Variables as "deBruijn predicate families"
