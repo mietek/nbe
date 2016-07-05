@@ -5,8 +5,15 @@
 module Predicates where
 
   open import Relation.Unary public
-    using ( Pred
-          ; _∈_ )
+    using ( _∈_ )
+    renaming ( Pred to Predℓ )
+
+  open import Level
+    using ( zero )
+
+  Pred : Set → Set₁
+  Pred A = Predℓ A zero
+
 
 -------------------------------------------------------------------------------
 -- Misc

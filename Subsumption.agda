@@ -3,7 +3,7 @@
 -------------------------------------------------------------------------------
 
 module Subsumption where
-  open import Data.Function
+  open import Function
     using ( id )
   open import Relation.Binary.Core
     using ( Reflexive

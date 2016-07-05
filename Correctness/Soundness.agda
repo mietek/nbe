@@ -1,5 +1,5 @@
 module Correctness.Soundness where
-  open import Data.Function
+  open import Function
     using    ( _∘_
              ; id )
   open import Data.Product

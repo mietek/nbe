@@ -3,7 +3,7 @@
 -------------------------------------------------------------------------------
 
 module Vars {χ : Set} where
-  open import Data.Function
+  open import Function
     using ( _∘_ )
   open import Relation.Binary.PropositionalEquality
     using ( _≡_

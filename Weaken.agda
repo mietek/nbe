@@ -3,7 +3,7 @@
 -------------------------------------------------------------------------------
 
 module Weaken where
-  open import Data.Function
+  open import Function
     using (_∘_)
 
   open import Ctx

@@ -1,6 +1,13 @@
 module Correctness.Convertability where
-  open import Relation.Binary
-    using ( Rel )
+  open import Relation.Binary public
+    using ()
+    renaming ( Rel to Relℓ )
+
+  open import Level
+    using ( zero )
+
+  Rel : Set → Set₁
+  Rel A = Relℓ A zero
 
   open import Ctx
   open import Subsumption
